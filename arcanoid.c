@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <string.h>
 #include <conio.h>
@@ -21,6 +22,17 @@ char mas[height][width+1];
 TyRacket racket;
 TyBall ball;
 
+
+
+void moveBall(float x, float y)
+{
+    ball.x=x;
+    ball.y=y;
+    ball.ix=(int)round(ball.x);
+    ball.iy=(int)round(ball.y);
+    
+}
+
 void initBall()
 {
   moveBall(2,2);
@@ -32,19 +44,41 @@ void pullBall()
     mas[ball.iy][ball.ix]='o';
 }
 
-void moveBall(float x, float y)
-{
-    ball.x=x;
-    ball.y=y;
-    ball.ix=(int)round(ball.x);
-    ball.iy=(int)round(ball.y);
-    
-}
+
 
 void automove()
 {
+        if (ball.alfa  <  0) ball.alfa+=M_PI*2;
+        if (ball.alfa  > M_PI*2) ball.alfa-=M_PI*2;
+        TyBall bl=ball;
     moveBall(ball.x+cos(ball.alfa)*ball.speed,ball.y+sin(ball.alfa)*ball.speed);
+
+    if(mas[ball.iy][ball.ix]=='#'||mas[ball.iy][ball.ix]=='=')
+    {
+        if(ball.ix!=bl.ix&&ball.iy!=bl.iy)
+        {
+             if (mas[bl.iy][ball.ix]==mas[ball.iy][bl.ix])
+             bl.alfa=M_PI+bl.alfa;
+             else
+             {
+                    if (mas[bl.iy][ball.ix]=='#')
+                    bl.alfa=3*M_PI-bl.alfa;
+                    else
+                    bl.alfa=2*M_PI-bl.alfa;
+             }
+        }
+        else if (ball.iy==bl.iy)
+            bl.alfa=(2*M_PI-bl.alfa)+M_PI;
+            else
+            bl.alfa=(2*M_PI-bl.alfa);
+
+        ball=bl;
+        automove();
+    }
+
 }
+
+
 
 void initRacket()
 {
@@ -111,16 +145,18 @@ initRacket();
 initBall();
 do
 {
+    if (ball.iy>height)
+    run=FALSE;
     setcur(0,0);
-    if (run)    automove();
     init();
 showRacket();
 pullBall();
 show();
+if (run)    automove();
     if (GetKeyState('A')<0)     moveRacket(racket.x-1);
     if (GetKeyState('D')<0)     moveRacket(racket.x+1);
     if (GetKeyState('W')<0)     run=TRUE;
-    if (!run)                   moveBall(racket.x +racket.w/2,racket.y-1);
+    if (!run)                   moveBall((float)(racket.x+racket.w/2),(float)(racket.y-1));
 }while (GetKeyState(VK_ESCAPE)>=0);
 getch();
 return 0;
